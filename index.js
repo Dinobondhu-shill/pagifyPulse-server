@@ -28,9 +28,12 @@ async function run() {
     const productCollection = database.collection('product');
 
     app.get("/products", async (req, res) => {
-      const { search, sort, priceSort, brand, category } = req.query;
+      const { search, sort, priceSort, brand, category,minPrice, maxPrice, page=1 } = req.query;
       let query = {};
       let sortQuery = {};
+      const limit = 10;
+      const skip = (page - 1) * limit;
+
 
       // Filtering
       if (search) {
@@ -42,6 +45,15 @@ async function run() {
       if (category) {
         query.category = category;
       }
+      if (minPrice || maxPrice) {
+        query.price = {};
+        if (minPrice) {
+          query.price.$gte = parseFloat(minPrice);
+        }
+        if (maxPrice) {
+          query.price.$lte = parseFloat(maxPrice);
+        }
+      }
       
       if (sort) {
         sortQuery.created_at = sort === 'date-asc' ? 1 : -1; // 1 for ascending, -1 for descending
@@ -51,9 +63,14 @@ async function run() {
       if (priceSort) {
         sortQuery.price = priceSort === 'price-asc' ? 1 : -1;
       }
-
-      const result = await productCollection.find(query).sort(sortQuery).toArray();
-      res.send(result);
+      const totalItems = await productCollection.countDocuments(query);
+      const products = await productCollection.find(query).sort(sortQuery).skip(skip).limit(limit).toArray();
+      res.send({
+        totalItems,
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(totalItems / limit),
+        products
+      });
     });
 
     // Send a ping to confirm a successful connection
