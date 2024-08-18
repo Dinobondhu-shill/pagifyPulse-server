@@ -15,6 +15,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
+      "https://pagifypulse.netlify.app"
     ],
     credentials: true,
     optionsSuccessStatus: 200,
