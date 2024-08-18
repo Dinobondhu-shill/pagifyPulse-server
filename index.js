@@ -11,32 +11,51 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-
-
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.axtsmlj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
 });
 
 async function run() {
   try {
+    await client.connect();  // Ensuring the connection before any routes are used.
     const database = client.db('pagify');
     const productCollection = database.collection('product');
-    
-app.get("/products", async(req, res)=>{
-const result = await productCollection.find().toArray()
-res.send(result)
-})
 
+    app.get("/products", async (req, res) => {
+      const { search, sort, priceSort, brand, category } = req.query;
+      let query = {};
+      let sortQuery = {};
 
-    await client.connect();
+      // Filtering
+      if (search) {
+        query.name = { $regex: search, $options: 'i' };
+      }
+      if (brand) {
+        query.brand = brand;
+      }
+      if (category) {
+        query.category = category;
+      }
+      
+      if (sort) {
+        sortQuery.created_at = sort === 'date-asc' ? 1 : -1; // 1 for ascending, -1 for descending
+      }
+   
+      // Sorting by Price
+      if (priceSort) {
+        sortQuery.price = priceSort === 'price-asc' ? 1 : -1;
+      }
+
+      const result = await productCollection.find(query).sort(sortQuery).toArray();
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
@@ -45,6 +64,7 @@ res.send(result)
     // await client.close();
   }
 }
+
 run().catch(console.dir);
 
 app.get('/', (req, res) => {
