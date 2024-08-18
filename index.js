@@ -1,5 +1,8 @@
 const express = require('express');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const {
+  MongoClient,
+  ServerApiVersion
+} = require('mongodb');
 const cors = require('cors');
 const dotenv = require('dotenv');
 
@@ -28,7 +31,16 @@ async function run() {
     const productCollection = database.collection('product');
 
     app.get("/products", async (req, res) => {
-      const { search, sort, priceSort, brand, category,minPrice, maxPrice, page=1 } = req.query;
+      const {
+        search,
+        sort,
+        priceSort,
+        brand,
+        category,
+        minPrice,
+        maxPrice,
+        page = 1
+      } = req.query;
       let query = {};
       let sortQuery = {};
       const limit = 10;
@@ -37,7 +49,10 @@ async function run() {
 
       // Filtering
       if (search) {
-        query.name = { $regex: search, $options: 'i' };
+        query.name = {
+          $regex: search,
+          $options: 'i'
+        };
       }
       if (brand) {
         query.brand = brand;
@@ -54,11 +69,11 @@ async function run() {
           query.price.$lte = parseFloat(maxPrice);
         }
       }
-      
+
       if (sort) {
         sortQuery.created_at = sort === 'date-asc' ? 1 : -1;
       }
-   
+
       // Sorting by Price
       if (priceSort) {
         sortQuery.price = priceSort === 'price-asc' ? 1 : -1;
@@ -74,10 +89,12 @@ async function run() {
     });
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    await client.db("admin").command({
+      ping: 1
+    });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
-    
+
   }
 }
 
