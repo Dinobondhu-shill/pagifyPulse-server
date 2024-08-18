@@ -23,7 +23,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect();  // Ensuring the connection before any routes are used.
+    await client.connect();
     const database = client.db('pagify');
     const productCollection = database.collection('product');
 
@@ -56,7 +56,7 @@ async function run() {
       }
       
       if (sort) {
-        sortQuery.created_at = sort === 'date-asc' ? 1 : -1; // 1 for ascending, -1 for descending
+        sortQuery.created_at = sort === 'date-asc' ? 1 : -1;
       }
    
       // Sorting by Price
@@ -77,8 +77,7 @@ async function run() {
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();
+    
   }
 }
 
